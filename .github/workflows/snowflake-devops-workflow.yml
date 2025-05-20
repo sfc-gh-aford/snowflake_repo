@@ -63,7 +63,7 @@ jobs:
 
           echo "Step 3: Running schemachange with connections.toml"
           schemachange deploy \
-            -f "$ACTUAL_REPO_ROOT/schemachange/scripts" \ 
+            -f "$ACTUAL_REPO_ROOT/schemachange/scripts" \
             --config-folder "$ACTUAL_REPO_ROOT/schemachange/config" \
             --connection-name default \
             -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
