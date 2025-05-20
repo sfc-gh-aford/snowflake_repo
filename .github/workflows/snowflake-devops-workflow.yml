@@ -18,7 +18,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2 # Or v4, both behave similarly for default pathing
 
       - name: Use Python 3.8.x
         uses: actions/setup-python@v4
@@ -35,33 +35,34 @@ jobs:
           SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
         run: |
           echo "GITHUB_WORKSPACE is: $GITHUB_WORKSPACE"
-
-          # Dynamically determine the actual root of your repository on the runner
-          # GITHUB_REPOSITORY is in 'owner/repo-name' format
-          REPO_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d '/' -f 2)
-          ACTUAL_REPO_ROOT="$GITHUB_WORKSPACE/$REPO_NAME"
-
-          echo "Calculated ACTUAL_REPO_ROOT: $ACTUAL_REPO_ROOT"
-
-          # Debugging: List contents of the calculated repo root
-          echo "--- Contents of $ACTUAL_REPO_ROOT: ---"
-          ls -F "$ACTUAL_REPO_ROOT/"
           
-          # Debugging: Confirming the schemachange folder exists within the actual repo root
-          echo "--- Contents of $ACTUAL_REPO_ROOT/schemachange/: ---"
-          ls -F "$ACTUAL_REPO_ROOT/schemachange/"
-          
+          # Debugging: List contents of the GITHUB_WORKSPACE (should show 'snowflake_repo/')
+          echo "--- Contents of GITHUB_WORKSPACE ($GITHUB_WORKSPACE): ---"
+          ls -F "$GITHUB_WORKSPACE/"
+
+          # Construct the base path to your repository content
+          # This assumes 'snowflake_repo' is the name of the subdirectory created by actions/checkout
+          # within GITHUB_WORKSPACE.
+          REPO_CONTENT_BASE_PATH="$GITHUB_WORKSPACE/snowflake_repo" 
+          echo "--- Calculated REPO_CONTENT_BASE_PATH: $REPO_CONTENT_BASE_PATH ---"
+          echo "--- Contents of REPO_CONTENT_BASE_PATH: ---"
+          ls -F "$REPO_CONTENT_BASE_PATH/" # This should list 'schemachange/' here
+
+          # Now, construct the path to your schemachange base folder
+          SCHEMACHANGE_BASE_PATH="$REPO_CONTENT_BASE_PATH/schemachange"
+          echo "--- Calculated SCHEMACHANGE_BASE_PATH: $SCHEMACHANGE_BASE_PATH ---"
+          echo "--- Contents of SCHEMACHANGE_BASE_PATH: ---"
+          ls -F "$SCHEMACHANGE_BASE_PATH/" # This should list 'scripts/' and potentially 'config/'
+
           python --version
           echo "Step 1: Installing schemachange"
           pip install schemachange
 
           echo "Step 2: Creating connections.toml"
-          # Create the config directory inside the 'schemachange' folder within your repo root
-          mkdir -p "$ACTUAL_REPO_ROOT/schemachange/config"
-          echo "Created config directory: $ACTUAL_REPO_ROOT/schemachange/config"
+          mkdir -p "$SCHEMACHANGE_BASE_PATH/config"
+          echo "Created config directory: $SCHEMACHANGE_BASE_PATH/config"
 
-          # Write the connections.toml file
-          cat <<EOF > "$ACTUAL_REPO_ROOT/schemachange/config/connections.toml"
+          cat <<EOF > "$SCHEMACHANGE_BASE_PATH/config/connections.toml"
           [connections.default]
           account = "${{ secrets.SF_ACCOUNT }}"
           user = "${{ secrets.SF_USER_NAME }}"
@@ -70,14 +71,14 @@ jobs:
           database = "${{ secrets.SF_DATABASE }}"
           password = "${{ secrets.SF_PASSWORD }}"
           EOF
-
+          
           echo "Contents of connections.toml (partial):"
-          cat "$ACTUAL_REPO_ROOT/schemachange/config/connections.toml" | grep -v 'password' # safer print
+          cat "$SCHEMACHANGE_BASE_PATH/config/connections.toml" | grep -v 'password' # safer print
 
           echo "Step 3: Running schemachange with connections.toml"
           schemachange deploy \
-            -f "$ACTUAL_REPO_ROOT/schemachange/scripts" \
-            --config-folder "$ACTUAL_REPO_ROOT/schemachange/config" \
+            -f "$SCHEMACHANGE_BASE_PATH/scripts" \
+            --config-folder "$SCHEMACHANGE_BASE_PATH/config" \
             --connection-name default \
             -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table
