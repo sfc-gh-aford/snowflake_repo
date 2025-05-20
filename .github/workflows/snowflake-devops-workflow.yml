@@ -37,16 +37,21 @@ jobs:
           SF_PASSWORD: ${{ secrets.SF_PASSWORD }} # Ensure this matches your secret name
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          # Define REPO_PATH dynamically for correctness
+          REPO_DIR_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d '/' -f 2)
+          ACTUAL_REPO_ROOT="$GITHUB_WORKSPACE/$REPO_DIR_NAME"
+          echo "Actual Repository Root (ACTUAL_REPO_ROOT): $ACTUAL_REPO_ROOT"
+          
           python --version
           echo "Step 1: Installing schemachange"
           pip install schemachange
 
           echo "Step 2: Creating connections.toml"
           # Create a config directory if it doesn't exist
-          mkdir -p $GITHUB_WORKSPACE/schemachange/config
+          mkdir -p $ACTUAL_REPO_ROOT/schemachange/config
 
           # Write the connections.toml file using GitHub Secrets
-          cat <<EOF > $GITHUB_WORKSPACE/schemachange/config/connections.toml
+          cat <<EOF > $ACTUAL_REPO_ROOT/schemachange/config/connections.toml
           [connections.default]
           account = "${{ secrets.SF_ACCOUNT }}"
           user = "${{ secrets.SF_USER_NAME }}"
@@ -57,12 +62,9 @@ jobs:
           EOF
 
           echo "Step 3: Running schemachange with connections.toml"
-          # Now, run schemachange without -a, -u, -r, -w, -d, -p
-          # Use --config-folder to point to where connections.toml is
-          # Use --connection-name to specify which connection to use (e.g., 'default')
           schemachange deploy \
-            -f $GITHUB_WORKSPACE/schemachange/scripts \
-            --config-folder $GITHUB_WORKSPACE/schemachange/config \
+            -f "$ACTUAL_REPO_ROOT/schemachange/scripts" \ 
+            --config-folder "$ACTUAL_REPO_ROOT/schemachange/config" \
             --connection-name default \
             -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table
