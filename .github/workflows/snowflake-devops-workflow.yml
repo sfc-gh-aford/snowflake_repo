@@ -31,13 +31,6 @@ jobs:
         # if: steps.checkout.outcome == 'success' # A more specific condition
 
       - name: Run schemachange
-        env:
-          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USER_NAME: ${{ secrets.SF_USERNAME }}
-          SF_ROLE: ${{ secrets.SF_ROLE }}
-          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
         run: |
           pip install schemachange
           schemachange deploy \
