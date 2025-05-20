@@ -28,56 +28,11 @@ jobs:
       - name: Run schemachange
         env:
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USER_NAME: ${{ secrets.SF_USER_NAME }} # Ensure secret name matches this
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
           SF_ROLE: ${{ secrets.SF_ROLE }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
           SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
         run: |
-          echo "GITHUB_WORKSPACE is: $GITHUB_WORKSPACE"
-          
-          # Debugging: List contents of the GITHUB_WORKSPACE (should show 'schemachange/')
-          echo "--- Contents of GITHUB_WORKSPACE ($GITHUB_WORKSPACE): ---"
-          ls -F "$GITHUB_WORKSPACE/"
-
-          # Construct the base path to your repository content
-          # Your logs confirm that your repo content is directly in GITHUB_WORKSPACE.
-          REPO_CONTENT_BASE_PATH="$GITHUB_WORKSPACE" 
-          echo "--- Calculated REPO_CONTENT_BASE_PATH: $REPO_CONTENT_BASE_PATH ---"
-          echo "--- Contents of REPO_CONTENT_BASE_PATH: ---"
-          ls -F "$REPO_CONTENT_BASE_PATH/" # This should list 'schemachange/' here
-
-          # Now, construct the path to your schemachange base folder
-          SCHEMACHANGE_BASE_PATH="$REPO_CONTENT_BASE_PATH/schemachange"
-          echo "--- Calculated SCHEMACHANGE_BASE_PATH: $SCHEMACHANGE_BASE_PATH ---"
-          echo "--- Contents of SCHEMACHANGE_BASE_PATH: ---"
-          ls -F "$SCHEMACHANGE_BASE_PATH/" # This should list 'scripts/' and potentially 'config/'
-
-          python --version
-          echo "Step 1: Installing schemachange"
           pip install schemachange
-
-          echo "Step 2: Creating connections.toml"
-          mkdir -p "$SCHEMACHANGE_BASE_PATH/config"
-          echo "Created config directory: $SCHEMACHANGE_BASE_PATH/config"
-
-          cat <<EOF > "$SCHEMACHANGE_BASE_PATH/config/connections.toml"
-          [connections.default]
-          account = "${{ secrets.SF_ACCOUNT }}"
-          user = "${{ secrets.SF_USER_NAME }}"
-          role = "${{ secrets.SF_ROLE }}"
-          warehouse = "${{ secrets.SF_WAREHOUSE }}"
-          database = "${{ secrets.SF_DATABASE }}"
-          password = "${{ secrets.SF_PASSWORD }}"
-          EOF
-          
-          echo "Contents of connections.toml (partial):"
-          cat "$SCHEMACHANGE_BASE_PATH/config/connections.toml" | grep -v 'password' # safer print
-
-          echo "Step 3: Running schemachange with connections.toml"
-          schemachange deploy \
-            -f "$SCHEMACHANGE_BASE_PATH/scripts" \
-            --config-folder "$SCHEMACHANGE_BASE_PATH/config" \
-            --connection-name default \
-            -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
-            --create-change-history-table
+          schemachange -f $GITHUB_WORKSPACE/scripts -a $SF_ACCOUNT -u $SF_USERNAME -r $SF_ROLE -w $SF_WAREHOUSE -d $SF_DATABASE -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
