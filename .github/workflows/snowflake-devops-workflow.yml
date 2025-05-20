@@ -70,7 +70,7 @@ jobs:
           echo "Step 3: Running schemachange with connections.toml"
           schemachange deploy \
             -f "$GITHUB_WORKSPACE/schemachange/scripts" \ # Path to your SQL scripts
-            --config-folder "$GITHUB_WORKSPACE/schemachange/config" \ # Path to connections.toml
+            --config-folder "$GITHUB_WORKSPACE/schemachange/config" \
             --connection-name default \
             -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table
