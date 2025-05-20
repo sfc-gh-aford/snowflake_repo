@@ -34,6 +34,14 @@ jobs:
           SNOWFLAKE_HOST="$SF_ACCOUNT.snowflakecomputing.com"
           echo "Snowflake Hostname: $SNOWFLAKE_HOST"
           echo "SF_ACCOUNT value: ${{ secrets.SF_ACCOUNT }}"
+
+      - name: Test Network Connectivity
+        env:
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+        run: |
+          SNOWFLAKE_HOST="$SF_ACCOUNT.snowflakecomputing.com"
+          echo "Testing network connectivity to: $SNOWFLAKE_HOST"
+          nslookup $SNOWFLAKE_HOST
     
       - name: Run schemachange
         run: |
