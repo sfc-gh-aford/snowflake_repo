@@ -1,6 +1,5 @@
 name: snowflake-devops-workflow
 
-# Controls when the action will run.
 on:
   push:
     branches:
@@ -9,7 +8,6 @@ on:
       - 'schemachange/scripts/**'
       - 'schemachange/connections.toml'
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -17,23 +15,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout repository
-        uses: actions/checkout@v2 # Or v4, both behave similarly for default pathing
+        uses: actions/checkout@v2
 
       - name: Use Python 3.8.x
         uses: actions/setup-python@v4
         with:
           python-version: 3.8.x
 
-       - name: Set permissions for connections.toml
+      - name: Set permissions for connections.toml
         run: |
           chmod 600 "$GITHUB_WORKSPACE/schemachange/connections.toml"
+        # Only run this step if connections.toml exists, good for robustness
+        # if: success() || failure() # Or use always() if you want it to always run
+        # if: steps.checkout.outcome == 'success' # A more specific condition
 
       - name: Run schemachange
         env:
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USER_NAME: ${{ secrets.SF_USER_NAME }}
+          SF_USER_NAME: ${{ secrets.SF_USERNAME }}
           SF_ROLE: ${{ secrets.SF_ROLE }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
@@ -43,6 +43,9 @@ jobs:
           schemachange deploy \
             -f "$GITHUB_WORKSPACE/schemachange/scripts" \
             --connections-file-path "$GITHUB_WORKSPACE/schemachange/connections.toml" \
+            --connection-name default \
+            -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
+            --create-change-history-table
             --connection-name default \
             -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
             --create-change-history-table
