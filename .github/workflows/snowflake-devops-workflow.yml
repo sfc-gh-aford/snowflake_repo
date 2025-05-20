@@ -27,31 +27,34 @@ jobs:
 
       - name: Run schemachange
         env:
-          # Keep these for now, as schemachange might still pick them up as fallbacks
-          # but the TOML file is the primary fix for the deprecation warning
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USER_NAME: ${{ secrets.SF_USER_NAME }}
+          SF_USER_NAME: ${{ secrets.SF_USER_NAME }} # Ensure secret name matches this
           SF_ROLE: ${{ secrets.SF_ROLE }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          SF_PASSWORD: ${{ secrets.SF_PASSWORD }} # Ensure this matches your secret name
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
         run: |
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          # Define REPO_PATH dynamically for correctness
-          REPO_DIR_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d '/' -f 2)
-          ACTUAL_REPO_ROOT="$GITHUB_WORKSPACE/$REPO_DIR_NAME"
-          echo "Actual Repository Root (ACTUAL_REPO_ROOT): $ACTUAL_REPO_ROOT"
+          echo "GITHUB_WORKSPACE is: $GITHUB_WORKSPACE"
+          
+          # Debugging: List contents of the GITHUB_WORKSPACE to confirm layout
+          echo "Contents of GITHUB_WORKSPACE ($GITHUB_WORKSPACE):"
+          ls -F "$GITHUB_WORKSPACE/"
+          
+          # Confirming the schemachange folder exists directly here
+          echo "Contents of $GITHUB_WORKSPACE/schemachange/ (if it exists):"
+          ls -F "$GITHUB_WORKSPACE/schemachange/"
           
           python --version
           echo "Step 1: Installing schemachange"
           pip install schemachange
 
           echo "Step 2: Creating connections.toml"
-          # Create a config directory if it doesn't exist
-          mkdir -p $ACTUAL_REPO_ROOT/schemachange/config
+          # Create the config directory inside the 'schemachange' folder directly under GITHUB_WORKSPACE
+          mkdir -p "$GITHUB_WORKSPACE/schemachange/config"
+          echo "Created config directory: $GITHUB_WORKSPACE/schemachange/config"
 
-          # Write the connections.toml file using GitHub Secrets
-          cat <<EOF > $ACTUAL_REPO_ROOT/schemachange/config/connections.toml
+          # Write the connections.toml file
+          cat <<EOF > "$GITHUB_WORKSPACE/schemachange/config/connections.toml"
           [connections.default]
           account = "${{ secrets.SF_ACCOUNT }}"
           user = "${{ secrets.SF_USER_NAME }}"
@@ -60,11 +63,14 @@ jobs:
           database = "${{ secrets.SF_DATABASE }}"
           password = "${{ secrets.SF_PASSWORD }}"
           EOF
+          
+          echo "Contents of connections.toml (partial):"
+          cat "$GITHUB_WORKSPACE/schemachange/config/connections.toml" | grep -v 'password' # safer print
 
           echo "Step 3: Running schemachange with connections.toml"
           schemachange deploy \
-            -f "$ACTUAL_REPO_ROOT/schemachange/scripts" \
-            --config-folder "$ACTUAL_REPO_ROOT/schemachange/config" \
+            -f "$GITHUB_WORKSPACE/schemachange/scripts" \ # Path to your SQL scripts
+            --config-folder "$GITHUB_WORKSPACE/schemachange/config" \ # Path to connections.toml
             --connection-name default \
             -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table
