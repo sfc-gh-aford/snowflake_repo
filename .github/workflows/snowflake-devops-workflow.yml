@@ -28,13 +28,6 @@ jobs:
           chmod 600 "$GITHUB_WORKSPACE/schemachange/connections.toml"
 
       - name: Run schemachange
-        env:
-          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USER_NAME: ${{ secrets.SF_USER_NAME }}
-          SF_ROLE: ${{ secrets.SF_ROLE }}
-          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
         run: |
           pip install schemachange
           schemachange deploy \
