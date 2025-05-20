@@ -30,7 +30,7 @@ jobs:
           # Keep these for now, as schemachange might still pick them up as fallbacks
           # but the TOML file is the primary fix for the deprecation warning
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_USER_NAME: ${{ secrets.SF_USER_NAME }}
           SF_ROLE: ${{ secrets.SF_ROLE }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
@@ -49,7 +49,7 @@ jobs:
           cat <<EOF > $GITHUB_WORKSPACE/config/connections.toml
           [connections.default]
           account = "${{ secrets.SF_ACCOUNT }}"
-          user = "${{ secrets.SF_USERNAME }}"
+          user = "${{ secrets.SF_USER_NAME }}"
           role = "${{ secrets.SF_ROLE }}"
           warehouse = "${{ secrets.SF_WAREHOUSE }}"
           database = "${{ secrets.SF_DATABASE }}"
