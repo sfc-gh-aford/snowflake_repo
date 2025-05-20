@@ -1,0 +1,8 @@
+# schemachange/connections.toml
+[connections.default]
+account = "{{ env.SF_ACCOUNT }}"
+user = "{{ env.SF_USER_NAME }}"
+password = "{{ env.SF_PASSWORD }}"
+role = "{{ env.SF_ROLE }}"
+warehouse = "{{ env.SF_WAREHOUSE }}"
+database = "{{ env.SF_DATABASE }}"
