@@ -1,0 +1,46 @@
+name: schemachange-devops
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'schemachange/scripts/**'
+      - 'schemachange/connections.toml'
+
+  workflow_dispatch:
+
+jobs:
+  deploy-snowflake-changes-job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Use Python 3.8.x
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8.x
+
+      - name: Set permissions for connections.toml
+        run: |
+          chmod 600 "$GITHUB_WORKSPACE/schemachange/connections.toml"
+
+      - name: Debug: Print Snowflake Hostname
+        env:
+          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+        run: |
+          SNOWFLAKE_HOST="\$SF_ACCOUNT.snowflakecomputing.com"
+          echo "Snowflake Hostname: \$SNOWFLAKE_HOST"
+          echo "SF_ACCOUNT value: ${{ secrets.SF_ACCOUNT }}"
+
+      - name: Run schemachange
+        run: |
+          pip install schemachange
+          schemachange deploy \
+            -f "$GITHUB_WORKSPACE/schemachange/scripts" \
+            --connections-file-path "$GITHUB_WORKSPACE/schemachange/connections.toml" \
+            --connection-name default \
+            -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
+            --create-change-history-table
