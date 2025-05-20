@@ -27,17 +27,42 @@ jobs:
 
       - name: Run schemachange
         env:
+          # Keep these for now, as schemachange might still pick them up as fallbacks
+          # but the TOML file is the primary fix for the deprecation warning
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
           SF_USERNAME: ${{ secrets.SF_USERNAME }}
           SF_ROLE: ${{ secrets.SF_ROLE }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD }}
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD }} # Ensure this matches your secret name
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           python --version
           echo "Step 1: Installing schemachange"
           pip install schemachange
-          
-          echo "Step 2: Running schemachange"
-          schemachange -f $GITHUB_WORKSPACE/scripts -a $SF_ACCOUNT -u $SF_USERNAME -r $SF_ROLE -w $SF_WAREHOUSE -d $SF_DATABASE -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
+
+          echo "Step 2: Creating connections.toml"
+          # Create a config directory if it doesn't exist
+          mkdir -p $GITHUB_WORKSPACE/config
+
+          # Write the connections.toml file using GitHub Secrets
+          cat <<EOF > $GITHUB_WORKSPACE/config/connections.toml
+          [connections.default]
+          account = "${{ secrets.SF_ACCOUNT }}"
+          user = "${{ secrets.SF_USERNAME }}"
+          role = "${{ secrets.SF_ROLE }}"
+          warehouse = "${{ secrets.SF_WAREHOUSE }}"
+          database = "${{ secrets.SF_DATABASE }}"
+          password = "${{ secrets.SF_PASSWORD }}"
+          EOF
+
+          echo "Step 3: Running schemachange with connections.toml"
+          # Now, run schemachange without -a, -u, -r, -w, -d, -p
+          # Use --config-folder to point to where connections.toml is
+          # Use --connection-name to specify which connection to use (e.g., 'default')
+          schemachange deploy \
+            -f $GITHUB_WORKSPACE/scripts \
+            --config-folder $GITHUB_WORKSPACE/config \
+            --connection-name default \
+            -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
+            --create-change-history-table
