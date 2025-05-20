@@ -46,7 +46,7 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/schemachange/config
 
           # Write the connections.toml file using GitHub Secrets
-          cat <<EOF > $GITHUB_WORKSPACE/config/connections.toml
+          cat <<EOF > $GITHUB_WORKSPACE/schemachange/config/connections.toml
           [connections.default]
           account = "${{ secrets.SF_ACCOUNT }}"
           user = "${{ secrets.SF_USER_NAME }}"
