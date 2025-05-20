@@ -31,9 +31,9 @@ jobs:
         env:
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
         run: |
-          SNOWFLAKE_HOST="\$SF_ACCOUNT.snowflakecomputing.com" # Corrected variable name
-          echo "Snowflake Hostname: \$SNOWFLAKE_HOST" # Print the constructed hostname
-          echo "SF_ACCOUNT value: ${{ secrets.SF_ACCOUNT }}" # Double check the value of the secret
+          SNOWFLAKE_HOST="\$SF_ACCOUNT.snowflakecomputing.com"
+          echo "Snowflake Hostname: \$SNOWFLAKE_HOST"
+          echo "SF_ACCOUNT value: ${{ secrets.SF_ACCOUNT }}"
 
       - name: Run schemachange
         run: |
