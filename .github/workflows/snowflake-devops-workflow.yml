@@ -26,6 +26,10 @@ jobs:
         with:
           python-version: 3.8.x
 
+       - name: Set permissions for connections.toml
+        run: |
+          chmod 600 "$GITHUB_WORKSPACE/schemachange/connections.toml"
+
       - name: Run schemachange
         env:
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
