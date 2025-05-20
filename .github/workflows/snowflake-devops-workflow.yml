@@ -26,9 +26,6 @@ jobs:
       - name: Set permissions for connections.toml
         run: |
           chmod 600 "$GITHUB_WORKSPACE/schemachange/connections.toml"
-        # Only run this step if connections.toml exists, good for robustness
-        # if: success() || failure() # Or use always() if you want it to always run
-        # if: steps.checkout.outcome == 'success' # A more specific condition
 
       - name: Run schemachange
         run: |
