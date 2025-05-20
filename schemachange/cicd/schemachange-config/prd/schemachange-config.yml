@@ -1,0 +1,15 @@
+#same for each env
+config-version: 1
+root-folder: 'scripts'
+modules-folder: null
+snowflake-account: 'SFPSCOGS-ALF_AWS_IRELAND' # for example: XXXXX.west-us.azure
+snowflake-warehouse: 'devops_wh'
+create-change-history-table: true
+autocommit: false
+verbose: true
+dry-run: false
+
+
+#changed within each env
+snowflake-user: 'devops_user'
+snowflake-role: 'devops_role'
