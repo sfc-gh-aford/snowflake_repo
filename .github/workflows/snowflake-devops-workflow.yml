@@ -43,6 +43,3 @@ jobs:
             --connection-name default \
             -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
             --create-change-history-table
-            --connection-name default \
-            -c "$SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY" \
-            --create-change-history-table
