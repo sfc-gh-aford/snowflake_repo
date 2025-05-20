@@ -31,10 +31,10 @@ jobs:
         env:
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
         run: |
-          SNOWFLAKE_HOST="\$SF_ACCOUNT.snowflakecomputing.com"
-          echo "Snowflake Hostname: \$SNOWFLAKE_HOST"
+          SNOWFLAKE_HOST="$SF_ACCOUNT.snowflakecomputing.com"
+          echo "Snowflake Hostname: $SNOWFLAKE_HOST"
           echo "SF_ACCOUNT value: ${{ secrets.SF_ACCOUNT }}"
-
+    
       - name: Run schemachange
         run: |
           pip install schemachange
