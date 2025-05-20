@@ -30,7 +30,7 @@ jobs:
       - name: Run schemachange
         env:
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USER_NAME: ${{ secrets.SF_USERNAME }} # Ensure this matches your TOML and Secret name exactly
+          SF_USER_NAME: ${{ secrets.SF_USER_NAME }}
           SF_ROLE: ${{ secrets.SF_ROLE }}
           SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
           SF_DATABASE: ${{ secrets.SF_DATABASE }}
