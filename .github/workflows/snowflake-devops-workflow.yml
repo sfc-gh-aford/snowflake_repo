@@ -27,7 +27,7 @@ jobs:
         run: |
           chmod 600 "$GITHUB_WORKSPACE/schemachange/connections.toml"
 
-      - name: Debug: Print Snowflake Hostname
+      - name: Print Snowflake Hostname
         env:
           SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
         run: |
