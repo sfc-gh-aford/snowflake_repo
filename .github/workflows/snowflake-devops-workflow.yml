@@ -36,14 +36,13 @@ jobs:
         run: |
           echo "GITHUB_WORKSPACE is: $GITHUB_WORKSPACE"
           
-          # Debugging: List contents of the GITHUB_WORKSPACE (should show 'snowflake_repo/')
+          # Debugging: List contents of the GITHUB_WORKSPACE (should show 'schemachange/')
           echo "--- Contents of GITHUB_WORKSPACE ($GITHUB_WORKSPACE): ---"
           ls -F "$GITHUB_WORKSPACE/"
 
           # Construct the base path to your repository content
-          # This assumes 'snowflake_repo' is the name of the subdirectory created by actions/checkout
-          # within GITHUB_WORKSPACE.
-          REPO_CONTENT_BASE_PATH="$GITHUB_WORKSPACE/snowflake_repo" 
+          # Your logs confirm that your repo content is directly in GITHUB_WORKSPACE.
+          REPO_CONTENT_BASE_PATH="$GITHUB_WORKSPACE" 
           echo "--- Calculated REPO_CONTENT_BASE_PATH: $REPO_CONTENT_BASE_PATH ---"
           echo "--- Contents of REPO_CONTENT_BASE_PATH: ---"
           ls -F "$REPO_CONTENT_BASE_PATH/" # This should list 'schemachange/' here
