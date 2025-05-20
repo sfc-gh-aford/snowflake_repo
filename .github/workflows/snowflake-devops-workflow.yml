@@ -1,6 +1,6 @@
 name: snowflake-devops-workflow
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   push:
     branches:
@@ -35,26 +35,33 @@ jobs:
           SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
         run: |
           echo "GITHUB_WORKSPACE is: $GITHUB_WORKSPACE"
+
+          # Dynamically determine the actual root of your repository on the runner
+          # GITHUB_REPOSITORY is in 'owner/repo-name' format
+          REPO_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d '/' -f 2)
+          ACTUAL_REPO_ROOT="$GITHUB_WORKSPACE/$REPO_NAME"
+
+          echo "Calculated ACTUAL_REPO_ROOT: $ACTUAL_REPO_ROOT"
+
+          # Debugging: List contents of the calculated repo root
+          echo "--- Contents of $ACTUAL_REPO_ROOT: ---"
+          ls -F "$ACTUAL_REPO_ROOT/"
           
-          # Debugging: List contents of the GITHUB_WORKSPACE to confirm layout
-          echo "Contents of GITHUB_WORKSPACE ($GITHUB_WORKSPACE):"
-          ls -F "$GITHUB_WORKSPACE/"
-          
-          # Confirming the schemachange folder exists directly here
-          echo "Contents of $GITHUB_WORKSPACE/schemachange/ (if it exists):"
-          ls -F "$GITHUB_WORKSPACE/schemachange/"
+          # Debugging: Confirming the schemachange folder exists within the actual repo root
+          echo "--- Contents of $ACTUAL_REPO_ROOT/schemachange/: ---"
+          ls -F "$ACTUAL_REPO_ROOT/schemachange/"
           
           python --version
           echo "Step 1: Installing schemachange"
           pip install schemachange
 
           echo "Step 2: Creating connections.toml"
-          # Create the config directory inside the 'schemachange' folder directly under GITHUB_WORKSPACE
-          mkdir -p "$GITHUB_WORKSPACE/schemachange/config"
-          echo "Created config directory: $GITHUB_WORKSPACE/schemachange/config"
+          # Create the config directory inside the 'schemachange' folder within your repo root
+          mkdir -p "$ACTUAL_REPO_ROOT/schemachange/config"
+          echo "Created config directory: $ACTUAL_REPO_ROOT/schemachange/config"
 
           # Write the connections.toml file
-          cat <<EOF > "$GITHUB_WORKSPACE/schemachange/config/connections.toml"
+          cat <<EOF > "$ACTUAL_REPO_ROOT/schemachange/config/connections.toml"
           [connections.default]
           account = "${{ secrets.SF_ACCOUNT }}"
           user = "${{ secrets.SF_USER_NAME }}"
@@ -63,14 +70,14 @@ jobs:
           database = "${{ secrets.SF_DATABASE }}"
           password = "${{ secrets.SF_PASSWORD }}"
           EOF
-          
+
           echo "Contents of connections.toml (partial):"
-          cat "$GITHUB_WORKSPACE/schemachange/config/connections.toml" | grep -v 'password' # safer print
+          cat "$ACTUAL_REPO_ROOT/schemachange/config/connections.toml" | grep -v 'password' # safer print
 
           echo "Step 3: Running schemachange with connections.toml"
           schemachange deploy \
-            -f "$GITHUB_WORKSPACE/schemachange/scripts" \
-            --config-folder "$GITHUB_WORKSPACE/schemachange/config" \
+            -f "$ACTUAL_REPO_ROOT/schemachange/scripts" \
+            --config-folder "$ACTUAL_REPO_ROOT/schemachange/config" \
             --connection-name default \
             -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY \
             --create-change-history-table
